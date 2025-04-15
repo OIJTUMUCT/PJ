@@ -3,7 +3,7 @@ name: Deploy to VM
 on:
   push:
     tags:
-      - 'v*'  # триггер по тегу вида v1.0.0
+      - 'v*'
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Настройка SSH-ключа для Ansible и Git
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          echo "${{ secrets.DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
@@ -41,31 +41,34 @@ jobs:
 
             echo "Клонируем или обновляем репозиторий..."
             if [ ! -d "$PROJECT_DIR/.git" ]; then
-              GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+              mkdir -p ~/.ssh
+              echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+              chmod 600 ~/.ssh/deploy_key
+              export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
               git clone git@github.com:${{ github.repository }} "$PROJECT_DIR"
             fi
 
             cd "$PROJECT_DIR"
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
             git fetch --all
             git checkout ${{ github.ref_name }}
             git pull
 
             echo "Пишем .env файл из GitHub Secrets..."
             cat <<EOF > .env
-            # API
-            BOT_TOKEN=${{ secrets.BOT_TOKEN }}
-            OAUTH_TOKEN=${{ secrets.OAUTH_TOKEN }}
-            OAUTH_YANDEX_DISK_TOKEN=${{ secrets.OAUTH_YANDEX_DISK_TOKEN }}
-            FOLDER_ID=${{ secrets.FOLDER_ID }}
+BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+OAUTH_TOKEN=${{ secrets.OAUTH_TOKEN }}
+OAUTH_YANDEX_DISK_TOKEN=${{ secrets.OAUTH_YANDEX_DISK_TOKEN }}
+FOLDER_ID=${{ secrets.FOLDER_ID }}
 
-            # DB
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            POSTGRES_HOST=postgres
-            POSTGRES_PORT=5432
-            EOF
+POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+EOF
 
             echo "Перезапускаем окружение Docker..."
             docker-compose down || true
             docker-compose up -d --build
+
