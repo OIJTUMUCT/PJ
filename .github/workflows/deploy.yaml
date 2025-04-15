@@ -54,7 +54,6 @@ jobs:
             cd "$PROJECT_DIR"
             git fetch --all
             git checkout ${{ github.ref_name }}
-            git pull
 
             echo "📝 Создаём .env файл из GitHub Secrets"
             cat <<EOF > .env
@@ -66,8 +65,8 @@ jobs:
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            POSTGRES_HOST=postgres
-            POSTGRES_PORT=5432
+            POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+            POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             EOF
 
             echo "🐳 Перезапускаем Docker"
