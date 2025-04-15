@@ -35,7 +35,7 @@ services:
     build:
       context: ./airflow
       dockerfile: airflow.Dockerfile
-    entrypoint: ["/bin/bash", "-c", "chmod +x /opt/airflow/scripts/entrypoint.sh && /opt/airflow/scripts/entrypoint.sh"]
+    entrypoint: ["/bin/bash", "-c", "chmod +x /entrypoint.sh && /entrypoint.sh"]
     env_file: .env
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
@@ -43,7 +43,6 @@ services:
       - PYTHONPATH=/opt/airflow
     volumes:
       - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/scripts:/opt/airflow/scripts
       - ./.env:/opt/airflow/.env
     depends_on:
       - postgres

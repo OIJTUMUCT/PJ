@@ -5,7 +5,7 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 USER root
-COPY ./entrypoint.sh /opt/airflow/scripts/entrypoint.sh
-RUN chmod +x /opt/airflow/scripts/entrypoint.sh
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 USER airflow
