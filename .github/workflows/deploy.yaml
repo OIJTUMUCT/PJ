@@ -55,7 +55,7 @@ jobs:
             git pull
 
             echo "Пишем .env файл из GitHub Secrets..."
-            cat <<EOF > .env
+cat <<EOF > .env
 BOT_TOKEN=${{ secrets.BOT_TOKEN }}
 OAUTH_TOKEN=${{ secrets.OAUTH_TOKEN }}
 OAUTH_YANDEX_DISK_TOKEN=${{ secrets.OAUTH_YANDEX_DISK_TOKEN }}
