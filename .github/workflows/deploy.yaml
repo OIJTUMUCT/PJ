@@ -3,7 +3,7 @@ name: Deploy to VM
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'  # Триггер при пуше тега, например v1.0.0
 
 jobs:
   deploy:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout репозитория
         uses: actions/checkout@v3
 
-      - name: Настройка SSH-ключа для Ansible и Git
+      - name: Настройка SSH-ключа для Git и Ansible
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
@@ -30,31 +30,33 @@ jobs:
             [all]
             target ansible_host=${{ secrets.VM_HOST }} ansible_user=${{ secrets.VM_USER }}
 
-      - name: Деплой проекта через SSH
+      - name: Деплой проекта на ВМ
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
+            set -e
             PROJECT_DIR=~/pj_project
 
-            echo "Клонируем или обновляем репозиторий..."
+            echo "➡️ Подготовка каталога и SSH-ключа для Git"
+            mkdir -p ~/.ssh
+            echo "${{ secrets.DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
+
+            echo "📥 Клонируем или обновляем репозиторий"
             if [ ! -d "$PROJECT_DIR/.git" ]; then
-              mkdir -p ~/.ssh
-              echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
-              chmod 600 ~/.ssh/deploy_key
-              export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
               git clone git@github.com:${{ github.repository }} "$PROJECT_DIR"
             fi
 
             cd "$PROJECT_DIR"
-            export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
             git fetch --all
             git checkout ${{ github.ref_name }}
             git pull
 
-            echo "Пишем .env файл из GitHub Secrets..."
+            echo "📝 Создаём .env файл из GitHub Secrets"
             cat <<EOF > .env
             BOT_TOKEN=${{ secrets.BOT_TOKEN }}
             OAUTH_TOKEN=${{ secrets.OAUTH_TOKEN }}
@@ -68,7 +70,7 @@ jobs:
             POSTGRES_PORT=5432
             EOF
 
-            echo "Перезапускаем окружение Docker..."
+            echo "🐳 Перезапускаем Docker"
             docker-compose down || true
             docker-compose up -d --build
 
