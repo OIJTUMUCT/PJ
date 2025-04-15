@@ -35,7 +35,7 @@ services:
     build:
       context: ./airflow
       dockerfile: airflow.Dockerfile
-    entrypoint: ["/bin/bash", "-c", "chmod +x /entrypoint.sh && /entrypoint.sh"]
+    entrypoint: /entrypoint.sh
     env_file: .env
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
