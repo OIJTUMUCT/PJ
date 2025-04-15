@@ -3,32 +3,34 @@ name: Deploy to VM
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'  # триггер по тегу вида v1.0.0
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout репозитория
         uses: actions/checkout@v3
 
-      - name: Setup SSH deploy key
+      - name: Настройка SSH-ключа для Ansible и Git
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-      - name: Prepare VM with Ansible
+      - name: Подготовка VM с помощью Ansible
         uses: dawidd6/action-ansible-playbook@v2
+        env:
+          ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/deploy_key
         with:
           playbook: prepare-vm.yml
           inventory: |
             [all]
-            target ansible_host=${{ secrets.VM_HOST }} ansible_user=${{ secrets.VM_USER }} ansible_ssh_private_key_file=~/.ssh/deploy_key
+            target ansible_host=${{ secrets.VM_HOST }} ansible_user=${{ secrets.VM_USER }}
 
-      - name: Deploy to remote VM via SSH
+      - name: Деплой проекта через SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VM_HOST }}
@@ -37,6 +39,7 @@ jobs:
           script: |
             PROJECT_DIR=~/pj_project
 
+            echo "Клонируем или обновляем репозиторий..."
             if [ ! -d "$PROJECT_DIR/.git" ]; then
               GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
               git clone git@github.com:${{ github.repository }} "$PROJECT_DIR"
@@ -47,7 +50,7 @@ jobs:
             git checkout ${{ github.ref_name }}
             git pull
 
-            echo "Writing .env file from secrets..."
+            echo "Пишем .env файл из GitHub Secrets..."
             cat <<EOF > .env
             # API
             BOT_TOKEN=${{ secrets.BOT_TOKEN }}
@@ -63,5 +66,6 @@ jobs:
             POSTGRES_PORT=5432
             EOF
 
+            echo "Перезапускаем окружение Docker..."
             docker-compose down || true
             docker-compose up -d --build
