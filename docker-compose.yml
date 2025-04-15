@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./postgres/conf/postgres.conf:/etc/postgresql/postgresql.conf
+      - ./postgres/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    restart: always
+
+  telegram-bot:
+    build:
+      context: ./bot
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+
+  airflow-init:
+    build:
+      context: ./airflow
+      dockerfile: airflow.Dockerfile
+    entrypoint: ["/opt/airflow/scripts/entrypoint.sh"]
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - PYTHONPATH=/opt/airflow
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/scripts:/opt/airflow/scripts
+      - ./.env:/opt/airflow/.env
+    depends_on:
+      - postgres
+
+  airflow-webserver:
+    build:
+      context: ./airflow
+      dockerfile: airflow.Dockerfile
+    ports:
+      - "8080:8080"
+    command: webserver
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - PYTHONPATH=/opt/airflow
+      - OAUTH_YANDEX_DISK_TOKEN=${OAUTH_YANDEX_DISK_TOKEN}
+    depends_on:
+      - airflow-init
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/scripts:/opt/airflow/scripts
+      - ./.env:/opt/airflow/.env
+
+  airflow-scheduler:
+    build:
+      context: ./airflow
+      dockerfile: airflow.Dockerfile
+    command: scheduler
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - PYTHONPATH=/opt/airflow
+      - OAUTH_YANDEX_DISK_TOKEN=${OAUTH_YANDEX_DISK_TOKEN}
+    depends_on:
+      - airflow-init
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/scripts:/opt/airflow/scripts
+      - ./.env:/opt/airflow/.env
+
+volumes:
+  pg_data:

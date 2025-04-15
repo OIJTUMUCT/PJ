@@ -1,0 +1,67 @@
+name: Deploy to VM
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup SSH deploy key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Prepare VM with Ansible
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: prepare-vm.yml
+          inventory: |
+            [all]
+            target ansible_host=${{ secrets.VM_HOST }} ansible_user=${{ secrets.VM_USER }} ansible_ssh_private_key_file=~/.ssh/deploy_key
+
+      - name: Deploy to remote VM via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            PROJECT_DIR=~/pj_project
+
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+              git clone git@github.com:${{ github.repository }} "$PROJECT_DIR"
+            fi
+
+            cd "$PROJECT_DIR"
+            git fetch --all
+            git checkout ${{ github.ref_name }}
+            git pull
+
+            echo "Writing .env file from secrets..."
+            cat <<EOF > .env
+            # API
+            BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+            OAUTH_TOKEN=${{ secrets.OAUTH_TOKEN }}
+            OAUTH_YANDEX_DISK_TOKEN=${{ secrets.OAUTH_YANDEX_DISK_TOKEN }}
+            FOLDER_ID=${{ secrets.FOLDER_ID }}
+
+            # DB
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_HOST=postgres
+            POSTGRES_PORT=5432
+            EOF
+
+            docker-compose down || true
+            docker-compose up -d --build
