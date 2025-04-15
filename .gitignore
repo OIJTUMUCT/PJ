@@ -12,7 +12,7 @@ venv/
 
 *.log
 docker-compose.override.yml
-**/Dockerfile~  # случайные резервные файлы
+**/Dockerfile~
 **/airflow/airflow.cfg
 **/airflow/unittests.cfg
 

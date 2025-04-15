@@ -9,8 +9,8 @@ if ! airflow users list | grep -q admin; then
   airflow users create \
     --username admin \
     --password admin \
-    --firstname Иван \
-    --lastname Админов \
+    --firstname Anonymous \
+    --lastname X \
     --role Admin \
     --email admin@example.com
 else
