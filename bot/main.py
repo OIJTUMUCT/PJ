@@ -9,16 +9,13 @@ from modules.handlers import router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# создаём бота с токеном из переменной окружения
 bot = Bot(token=os.getenv("BOT_TOKEN"))
 dp = Dispatcher(storage=MemoryStorage())
 
-# основная асинхронная функция, запускающая бота
 async def main():
     try:
-        logger.info(">>> BOT STARTED")
+        logger.info("Запуск бота")
         dp.include_router(router)
-        logger.info(">>> Router included")
         await dp.start_polling(bot)
     except Exception as e:
         logger.critical(f"Ошибка запуска бота: {e}")
