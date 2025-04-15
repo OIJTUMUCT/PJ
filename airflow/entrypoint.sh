@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+echo "⏳ Ожидаем PostgreSQL на порту 5432..."
+until nc -z postgres 5432; do
+  echo "⏳ PostgreSQL ещё не доступен, жду..."
+  sleep 2
+done
+echo "✅ PostgreSQL доступен"
+
 echo "🧱 Инициализация БД"
 airflow db migrate
 
@@ -14,12 +21,12 @@ if ! airflow users list | grep -q admin; then
     --role Admin \
     --email admin@example.com
 else
-  echo "Пользователь admin уже существует"
+  echo "✅ Пользователь admin уже существует"
 fi
 
 echo "⏳ Ждём загрузки DAG-ов..."
 until airflow dags list | grep -q "export_to_yadisk_dag"; do
-  echo "DAG-и ещё не найдены, ожидание..."
+  echo "🕒 DAG-и ещё не найдены, ожидание..."
   sleep 5
 done
 
