@@ -43,6 +43,7 @@ services:
       - PYTHONPATH=/opt/airflow
     volumes:
       - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/scripts:/opt/airflow/scripts
       - ./.env:/opt/airflow/.env
     depends_on:
       - postgres
