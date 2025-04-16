@@ -7,16 +7,16 @@
 
 #### Навигация по проекту:
 - bot/modules содержит в себе:
-  - скрипт, описывающий функционал работы бота 'handlers.py'
-  - скрипт для взаимодействия бота с PostgreSQL
+  - скрипт, описывающий функционал работы бота `handlers.py`
+  - скрипт для взаимодействия бота с PostgreSQL `utils.py`
 - airflow/ содержит в себе:
   - dags/ dag-файлы для отработки скриптов по расписанию
-  - scripts/ скрипт для инициализации БД 'init_db.py', получения AIM_TOKEN 'get_iam_token.py', экспорта файла на Яндекс.Диск 'export_csv_to_yadisk' (старое название - экспортирует НЕ .csv, а .xlsx)
-  - entrypoint.sh для инициализации airflow и разблокировки (включения) dags
+  - scripts/ скрипт для инициализации БД `init_db.py`, получения AIM_TOKEN `get_iam_token.py`, экспорта файла на Яндекс.Диск `export_csv_to_yadisk.py` (старое название - экспортирует НЕ .csv, а .xlsx)
+  - `entrypoint.sh` для инициализации airflow и разблокировки (включения) dags
 - postgres/conf содержит корректировочные конфиги для открытия доступа к PostgreSQL-серверу 
-- docker-compose.yml конфиги оркестратора контейнеров
-- .github/workflows/deploy.yaml GitHub Actions (AC/ID-скрипт управления деплоем)
-- prepare-vm.yml конфиги ansible (часть деплоя -  позволяет автоматически установить Docker и Docker Compose, а также выполнить необходимые настройки)
+- `docker-compose.yml` конфиги оркестратора контейнеров
+- .github/workflows/`deploy.yaml` GitHub Actions (AC/ID-скрипт управления деплоем)
+- `prepare-vm.yml` конфиги ansible (часть деплоя -  позволяет автоматически установить Docker и Docker Compose, а также выполнить необходимые настройки)
 
 ##### Примечание! .env формируется из GitHub Secrets уже во процессе деплоя
 
