@@ -17,6 +17,9 @@
 - docker-compose.yml конфиги оркестратора контейнеров
 - .github/workflows/deploy.yaml GitHub Actions (AC/ID-скрипт управления деплоем)
 - prepare-vm.yml конфиги ansible (часть деплоя -  позволяет автоматически установить Docker и Docker Compose, а также выполнить необходимые настройки)
+
+####№ Примечание .env формируется из GitHub Secrets уже во процессе деплоя
+
 ## Структура проекта
 
 ![image](https://github.com/user-attachments/assets/319759c7-f830-4d31-87ce-a2169eda0614)
