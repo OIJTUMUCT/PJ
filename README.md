@@ -1,9 +1,11 @@
-# Информация для проверки
-- ![Ссылка на папку Яндекс.Диск]( https://disk.yandex.ru/d/5Ac0VTz1wtP_ow)
-- ![Дашборд - источник Яндекс.Диск](https://datalens.yandex/9iiwr4valmgav)
-- ![Дашборд - источник удалённый сервер PostgreSQL](https://datalens.yandex/z8fj31p2tf5el)
+## 🔍 Информация для проверки
+![image](https://github.com/user-attachments/assets/af0e98cc-50e5-4ea4-a823-509ebb3ac836)
+- 🤖 Telegram-бот: [`@buchatti_bot`](https://t.me/buchatti_bot)
+- 📁 [Папка на Яндекс.Диске (.xlsx)](https://disk.yandex.ru/d/5Ac0VTz1wtP_ow)
+- 📊 [Дашборд (источник — Яндекс.Диск)](https://datalens.yandex/9iiwr4valmgav)
+- 🧮 [Дашборд (источник — PostgreSQL)](https://datalens.yandex/z8fj31p2tf5el)
 
-# Структура проекта
+## Структура проекта
 
 ![image](https://github.com/user-attachments/assets/319759c7-f830-4d31-87ce-a2169eda0614)
 
