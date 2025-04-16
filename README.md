@@ -1,3 +1,8 @@
+# Информация для проверки
+- ![Ссылка на папку Яндекс.Диск]( https://disk.yandex.ru/d/5Ac0VTz1wtP_ow)
+- ![Дашборд - источник Яндекс.Диск](https://datalens.yandex/9iiwr4valmgav)
+- ![Дашборд - источник удалённый сервер PostgreSQL](https://datalens.yandex/z8fj31p2tf5el)
+
 # Структура проекта
 
 ![image](https://github.com/user-attachments/assets/319759c7-f830-4d31-87ce-a2169eda0614)
