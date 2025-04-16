@@ -3,7 +3,7 @@ name: Deploy to VM
 on:
   push:
     tags:
-      - 'v*'  # Триггер при пуше тега, например v1.0.0
+      - 'v*'
 
 jobs:
   deploy:
@@ -30,7 +30,7 @@ jobs:
             [all]
             target ansible_host=${{ secrets.VM_HOST }} ansible_user=${{ secrets.VM_USER }}
 
-      - name: Деплой проекта на ВМ
+      - name: Деплой проекта на VM
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VM_HOST }}
@@ -40,13 +40,13 @@ jobs:
             set -e
             PROJECT_DIR=~/pj_project
 
-            echo "➡️ Подготовка каталога и SSH-ключа для Git"
+            echo "Подготовка каталога и SSH-ключа для Git"
             mkdir -p ~/.ssh
             echo "${{ secrets.DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
             chmod 600 ~/.ssh/deploy_key
             export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
 
-            echo "📥 Клонируем или обновляем репозиторий"
+            echo "Клонирование/обновление репозитория"
             if [ ! -d "$PROJECT_DIR/.git" ]; then
               git clone git@github.com:${{ github.repository }} "$PROJECT_DIR"
             fi
@@ -55,7 +55,7 @@ jobs:
             git fetch --all
             git checkout ${{ github.ref_name }}
 
-            echo "📝 Создаём .env файл из GitHub Secrets"
+            echo "Создание .env файл из GitHub Secrets"
             cat <<EOF > .env
             BOT_TOKEN=${{ secrets.BOT_TOKEN }}
             OAUTH_TOKEN=${{ secrets.OAUTH_TOKEN }}
@@ -69,7 +69,6 @@ jobs:
             POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             EOF
 
-            echo "🐳 Перезапускаем Docker"
+            echo "Перезапуск Docker Compose"
             docker-compose down || true
             docker-compose up -d --build
-

@@ -13,7 +13,7 @@ router = Router()
 @router.message(Command("start"))
 async def start_command(message: types.Message, bot: Bot):
     """
-    приветствует пользователя при команде /start.
+    приветствует пользователя
     """
     await utils.log_user_action(message.from_user.id, "start command")
     await message.answer(
@@ -23,6 +23,9 @@ async def start_command(message: types.Message, bot: Bot):
 
 @router.message(Command("help"))
 async def help_command(message: types.Message, bot: Bot):
+    """
+    показывает список команд
+    """
     await utils.log_user_action(message.from_user.id, "help command")
 
     help_text = (
